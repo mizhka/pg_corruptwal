@@ -1,0 +1,3 @@
+comment='Extension brings PG functions to simulate WAL corruption'
+default_version='0.0.1'
+relocatable=true
