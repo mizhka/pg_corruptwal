@@ -58,18 +58,14 @@ pg_corruptwal_hackit(struct wal_buffers_info *info, uint16 offset)
 	}
 #endif
 
-	tmp = info->current + ((offset > 0) ? offset : 0);
-
-//	tmp[0x100] = 0xDE;
-//	tmp[0x101] = 0xAD;
-//	tmp[0x102] = 0xBE;
-//	tmp[0x103] = 0xEF;
+	tmp = info->current + offset;
 
 	tmp[0x100] = 0xDE;
 	tmp[0x101] = 0xAD;
 	tmp[0x102] = 0xBE;
 	tmp[0x103] = 0xEF;
 
+	elog(LOG, "WAL corrupted at %p", tmp);
 	return;
 }
 
@@ -97,6 +93,7 @@ pg_corruptwal(PG_FUNCTION_ARGS)
 	TypeFuncClass				 funcclass;
 	MemoryContext 				 per_query_memory, old;
 
+	elog(LOG, "WAL corrupting...");
 	/* Initialize variables */
 	rs = (ReturnSetInfo *) fcinfo->resultinfo;
 	per_query_memory = rs->econtext->ecxt_per_query_memory;
@@ -117,7 +114,7 @@ pg_corruptwal(PG_FUNCTION_ARGS)
 		goto err;
 	}
 
-	pg_corruptwal_hackit(&wal_info, (fcinfo->args[0].isnull) ? -1 :
+	pg_corruptwal_hackit(&wal_info, (fcinfo->args[0].isnull) ? 0 :
 			DatumGetUInt16(fcinfo->args[0].value));
 	pg_corruptwal_return_tuple(rs, &wal_info);
 
